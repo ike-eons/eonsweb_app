@@ -3,13 +3,16 @@
     :fixed-header="true"
     :headers="headers"
     :search="search"
-    :items="categories"
-    sort-by="calories"
+    :items="customers"
+    sort-by="name"
     class="elevation-1 mytable"
   >
     <template v-slot:top>
       <v-toolbar flat color="teal" dark>
-        <v-toolbar-title>CATEGORIES</v-toolbar-title>
+        <v-toolbar-title
+          ><span><v-icon medium>mdi-account-group</v-icon> </span
+          >&nbsp;Customers</v-toolbar-title
+        >
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
 
@@ -32,7 +35,7 @@
               v-bind="attrs"
               v-on="on"
             >
-              <span class="font-weight-bold">+</span> New Category
+              <span class="font-weight-bold">+</span> New Customer
             </v-btn>
           </template>
           <v-card>
@@ -48,7 +51,7 @@
                       v-model="editedItem.name"
                       outlined
                       dense
-                      label="Category name"
+                      label="Customer name"
                       @input="$v.editedItem.name.$touch()"
                       @blur="$v.editedItem.name.$touch()"
                       :error-messages="nameErrors"
@@ -56,17 +59,27 @@
                     </v-text-field>
                   </v-col>
                   <v-col cols="12">
-                    <v-textarea
-                      v-model="editedItem.description"
-                      dense
-                      rows="2"
+                    <v-text-field
+                      v-model="editedItem.phone"
+                      label="Phone number"
+                      type="number"
                       outlined
-                      label="Description"
-                      @input="$v.editedItem.description.$touch()"
-                      @blur="$v.editedItem.description.$touch()"
-                      :error-messages="descriptionErrors"
-                    >
-                    </v-textarea>
+                      dense
+                      @blur="$v.editedItem.phone.$touch()"
+                      @input="$v.editedItem.phone.$touch()"
+                      :error-messages="phoneErrors"
+                    />
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="editedItem.shop_name"
+                      label="Shop name"
+                      outlined
+                      dense
+                      @blur="$v.editedItem.shop_name.$touch()"
+                      @input="$v.editedItem.shop_name.$touch()"
+                      :error-messages="shopNameErrors"
+                    />
                   </v-col>
                 </v-row>
               </v-container>
@@ -124,73 +137,84 @@
       </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="teal" @click="loadCategories"> Reset </v-btn>
+      <v-btn color="teal" class="white--text" @click="loadCustomers()">
+        Reset
+      </v-btn>
     </template>
   </v-data-table>
 </template>
 
 <script>
-import { minLength, required } from "vuelidate/lib/validators";
-import moment from "moment";
+import { minLength, required, numeric } from "vuelidate/lib/validators";
+// import moment from "moment";
 
 export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
     search: "",
+    customers: [],
     headers: [
       {
-        text: "Category Name",
+        text: "Customer Name",
         align: "start",
         sortable: true,
         value: "name",
       },
-      { text: "Description", value: "description" },
-      { text: "Created At", value: "date_created" },
-      { text: "Modified At", value: "date_modified" },
+      { text: "Phone", value: "phone", sortable: true },
+      { text: "Date Created", value: "date_created", sortable: true },
+      { text: "Date Modified", value: "date_modified", sortable: true },
       { text: "Actions", value: "actions", sortable: false },
     ],
-
     editedIndex: -1,
     editedItem: {
       name: "",
-      description: "",
-      date_created: moment().format("YYYY-MM-DD h:mm:ss a"),
-      date_modified: moment().format("YYYY-MM-DD h:mm:ss a"),
+      phone: "",
+      // date_created: moment.format("YYYY-MM-DD"),
+      // date_modified: moment.format("YYYY-MM-DD"),
     },
     defaultItem: {
       name: "",
-      description: "",
-      date_created: moment().format("YYYY-MM-DD h:mm:ss a"),
-      date_modified: moment().format("YYYY-MM-DD h:mm:ss a"),
+      phone: "",
+      // date_created: moment.format("YYYY-MM-DD"),
+      // date_modified: moment.format("YYYY-MM-DD"),
     },
   }),
 
   computed: {
-    categories() {
-      return this.$store.state.categories.categories;
-    },
     formTitle() {
-      return this.editedIndex === -1 ? "New Category" : "Edit Category";
+      return this.editedIndex === -1 ? "New Customer" : "Edit Customer";
     },
+
     nameErrors() {
       const errors = [];
       if (!this.$v.editedItem.name.$dirty) return errors;
-      !this.$v.editedItem.name.required &&
-        errors.push("Category name is required*");
       !this.$v.editedItem.name.minLength &&
-        errors.push("Category name must be atleast 3 characters*");
-      !this.$v.editedItem.name.uniqueName &&
-        errors.push("Category name already Exist*");
+        errors.push(" Name must be atleast 2 characters*");
+      !this.$v.editedItem.name.required && errors.push(" Name is required*");
       return errors;
     },
-    descriptionErrors() {
+    phoneErrors() {
       const errors = [];
-      if (!this.$v.editedItem.description.$dirty) return errors;
-      !this.$v.editedItem.description.required &&
-        errors.push("Category description is required");
-      !this.$v.editedItem.description.minLength &&
-        errors.push("Category description must be atleast 3 characters*");
+      if (!this.$v.editedItem.phone.$dirty) return errors;
+      !this.$v.editedItem.phone.uniquePhone &&
+        errors.push("Phone number already exist*");
+      !this.$v.editedItem.phone.required &&
+        errors.push("phone number is required*");
+      !this.$v.editedItem.phone.numeric &&
+        errors.push("phone number is INVALID, must only be digits (0 - 9) *");
+      !this.$v.editedItem.phone.tenDigitPhonNumber &&
+        errors.push("phone number must be exactly 10 digits *");
+
+      return errors;
+    },
+    AddressErrors() {
+      const errors = [];
+      if (!this.$v.editedItem.address.$dirty) return errors;
+      !this.$v.editedItem.address.minLength &&
+        errors.push("customer address must be atleast 4 characters*");
+      !this.$v.editedItem.address.required &&
+        errors.push("customer address is required*");
       return errors;
     },
   },
@@ -209,50 +233,58 @@ export default {
     editedItem: {
       name: {
         required,
-        minLength: minLength(3),
-        async uniqueName(value) {
+        minLength: minLength(2),
+      },
+      phone: {
+        required,
+        numeric,
+        tenDigitPhonNumber(value) {
+          return value.trim().length === 10;
+        },
+        async uniquePhone(value) {
           if (value == "") return true;
 
-          const categories = await this.categories;
-          const name_alreadyExist = categories.find(
-            (category) => category.name.toLowerCase() === value.toLowerCase()
+          const customers = this.customers;
+          const phone_no_AlreadyExist = customers.find(
+            (customer) => customer.phone === value
           );
-          if (name_alreadyExist) {
+          if (phone_no_AlreadyExist) {
             return false;
           }
           return true;
         },
       },
-      description: {
+      address: {
         required,
-        minLength: minLength(3),
+        minLength: minLength(4),
       },
     },
   },
 
   created() {
-    this.loadCategories();
+    this.loadCustomers();
   },
 
   methods: {
-    async loadCategories() {
-      await this.$store.dispatch("categories/fetchCategories");
+    loadCustomers() {
+      return this.customers;
     },
 
     editItem(item) {
-      this.editedIndex = this.categories.indexOf(item);
+      this.editedIndex = this.customers.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.categories.indexOf(item);
+      this.editedIndex = this.customers.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.categories.splice(this.editedIndex, 1);
+      this.customers.splice(this.editedIndex, 1);
+      // ipcRenderer.send('customers:delete', this.editedItem.id);
       this.closeDelete();
     },
 
@@ -272,32 +304,17 @@ export default {
       });
     },
 
-    // async save() {
-    //   if (this.editedIndex > -1) {
-    //     Object.assign(this.categories[this.editedIndex], this.editedItem);
-    //     await this.$store.dispatch("categories/editCategory", this.editedItem);
-    //     this.loadCategories();
-    //   } else {
-    //     this.$v.$touch();
-    //     if (!this.$v.$invalid) {
-    //       // ipcRenderer.send('categories:add', this.editedItem);
-    //       await this.$store.dispatch(
-    //         "categories/createCategory",
-    //         this.editedItem
-    //       );
-    //       this.loadCategories();
-    //       // this.categories.push(this.editedItem)
-    //     }
-    //   }
-    //   this.close();
-    // },
-
-    async save() {
-      console.log(this.editedItem);
-      await this.$store.dispatch("categories/createCategory", this.editedItem);
-
-      this.loadCategories();
-
+    save() {
+      if (this.editedIndex > -1) {
+        Object.assign(this.customers[this.editedIndex], this.editedItem);
+      } else {
+        this.$v.$touch();
+        if (!this.$v.$invalid) {
+          // ipcRenderer.send('customers:add', this.editedItem);
+          this.loadCustomers();
+          // this.products.push(this.editedItem)
+        }
+      }
       this.close();
     },
   },

@@ -1,19 +1,19 @@
-import Customer from "../models/Customers";
+import Category from "../models/Categories";
 
-Customer.createTable();
+Category.createTable();
 
 async function saveData(_, data) {
   try {
-    const customer = await Customer.insert(data);
-    return customer;
+    const category = await Category.insert(data);
+    return category;
   } catch (e) {
     console.log(e.message);
   }
 }
 async function updateData(_, data) {
   try {
-    let Customer = await Customer.update(data);
-    return customer;
+    let category = await Category.update(data);
+    return category;
   } catch (e) {
     console.log(e.message);
   }
@@ -21,8 +21,8 @@ async function updateData(_, data) {
 
 async function getOne(_, data) {
   try {
-    const customer = await Customer.getOne(data);
-    return customer;
+    const category = await Category.getOne(data);
+    return category;
   } catch (error) {
     console.log(error.message);
     return error.message;
@@ -31,10 +31,9 @@ async function getOne(_, data) {
 
 async function loadData(_, data) {
   try {
-    const res = await Customer.getAll();
+    const res = await Category.getAll();
     data = res;
-    console.log("********customers ****");
-    console.log(data);
+
     return data;
   } catch (error) {
     console.log(error.message);
@@ -44,9 +43,7 @@ async function loadData(_, data) {
 
 async function deleteData(_, data) {
   try {
-    console.log("customer controller deleteing");
-    console.log(data);
-    await Customer.delete(data);
+    await Category.delete(data);
   } catch (error) {
     console.log(error.message);
     return error.message;

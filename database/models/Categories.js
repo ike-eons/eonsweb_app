@@ -1,68 +1,56 @@
-import { db } from './db_connection';
+import { db } from "./db_connection";
 
 class Category {
-	constructor(name, description) {
-		(this.name = name), (this.description = description);
-	}
+  constructor(name, description, date_created, date_modified) {
+    (this.name = name),
+      (this.description = description),
+      (this.date_created = date_created),
+      (this.date_modified = date_modified);
+  }
 
-	static createTable() {
-		let sql = `CREATE TABLE IF NOT EXISTS  categories(
+  static createTable() {
+    let sql = `CREATE TABLE IF NOT EXISTS  categories(
             id  INTEGER PRIMARY KEY,
             name    TEXT,
-            description TEXT
+            description TEXT,
+			date_created TEXT,
+			date_modified TEXT
         )`;
+    console.log("categories table created");
+    return db.run(sql);
+  }
 
-		return db.run(sql);
-	}
+  static async insert(category) {
+    await db.run(` INSERT INTO categories VALUES(?,?,?,?,?) `, [
+      this.lastID,
+      category.name,
+      category.description,
+      category.date_created,
+      category.date_modified,
+    ]);
+  }
 
-	static async insert(name, description) {
-		await db.run(
-			` INSERT INTO categories VALUES(?,?,?) `,
-			[this.lastID, name, description],
-			(err) => {
-				if (err) {
-					console.log(err);
-					return;
-				} else {
-					console.log('Last ID: ' + this.lastID);
-					return;
-				}
-			}
-		);
-	}
+  static getAll() {
+    return db.all(`SELECT * FROM categories`);
+  }
 
-	static async getLastId() {
-		// `SELECT id FROM invoices ORDERED BY id desc limit 1`
-		const res = await db.get(
-			`SELECT id FROM categories ORDER BY id desc limit 1`,
-			[],
-			(err, row) => {
-				if (err) {
-					return console.log(err);
-				}
-				return console.log(row);
-			}
-		);
+  static async update(category) {
+    return db.run(
+      "UPDATE categories SET name=?,description=?,date_create=?,date_modified=? WHERE id=?",
+      [
+        category.name,
+        category.description,
+        category.date_created,
+        category.date_modified,
+        category.id,
+      ]
+    );
+  }
 
-		return res;
-	}
-
-	static getAll() {
-		return db.all(`SELECT * FROM categories`);
-	}
-
-	static async update(id, name, description) {
-		return db.run('UPDATE categories SET name=?,description=? WHERE id=?', [
-			name,
-			description,
-			id,
-		]);
-	}
-
-	static delete(id) {
-		db.run(`DELETE FROM categories WHERE id = ${id}`);
-		return console.log('item deleted');
-	}
+  static delete(id) {
+    db.run(`DELETE FROM categories WHERE id = ${id}`);
+    return console.log("item deleted");
+  }
 }
 
 export default Category;

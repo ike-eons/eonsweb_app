@@ -16,6 +16,8 @@ import // defaultUser,
 "../database/controllers/UserController.js";
 
 import * as CustomerController from "../database/controllers/CustomerController";
+import * as ProductController from "../database/controllers/ProductController";
+import * as CategoryController from "../database/controllers/CategoryController";
 
 // Get the path to the extraResources directory
 const extraResourcesPath = path.join(app.getAppPath(), "splash.html");
@@ -163,10 +165,11 @@ ipcMain.handle("user:update", updateData);
 ipcMain.handle("user:delete", deleteData);
 ipcMain.handle("users:load", loadData);
 
-//handle customer
+//customer handlers
 ipcMain.handle("customer:create", CustomerController.saveData);
 ipcMain.handle("customer:update", CustomerController.updateData);
 ipcMain.handle("customer:delete", CustomerController.deleteData);
+ipcMain.handle("customers:get-one", CustomerController.getOne);
 ipcMain.handle("customers:load", CustomerController.loadData);
 
 ipcMain.on("users:loadtotal", async (event, users) => {
@@ -182,6 +185,20 @@ ipcMain.on("users:loadtotal", async (event, users) => {
     console.log(error.message);
   }
 });
+
+//product handlers
+ipcMain.handle("product:create", ProductController.saveData);
+ipcMain.handle("product:update", ProductController.updateData);
+ipcMain.handle("product:delete", ProductController.deleteData);
+ipcMain.handle("product:get-one", ProductController.getOne);
+ipcMain.handle("products:load", ProductController.loadData);
+
+//category handlers
+ipcMain.handle("category:create", CategoryController.saveData);
+ipcMain.handle("category:update", CategoryController.updateData);
+ipcMain.handle("category:delete", CategoryController.deleteData);
+ipcMain.handle("category:get_one", CategoryController.getOne);
+ipcMain.handle("categories:load", CategoryController.loadData);
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

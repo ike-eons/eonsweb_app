@@ -1,49 +1,68 @@
-import {db} from './db_connection'
+import { db } from "./db_connection";
 
-class Customer{
+class Customer {
+  constructor(name, address, phone, date_created, date_modified) {
+    (this.name = name),
+      (this.address = address),
+      (this.phone = phone),
+      (this.date_created = date_created),
+      (this.date_modified = date_modified);
+  }
 
-    constructor(name,shop_name,shop_address,phone){
-        this.name = name,
-        this.shop_name = shop_name,
-        this.shop_address = shop_address,
-        this.phone  = phone
-        
-    }
-
-    static createTable(){
-        let sql = `CREATE TABLE IF NOT EXISTS  customers(
+  static createTable() {
+    let sql = `CREATE TABLE IF NOT EXISTS  customers(
             id  INTEGER PRIMARY KEY,
             name    TEXT,
-            shop_name TEXT,
-            shop_address TEXT,
-            phone TEXT
-        )`
+            address TEXT,
+            phone TEXT,
+            date_created TEXT,
+            date_modified TEXT
+        )`;
+    console.log("customers table created");
+    return db.run(sql);
+  }
 
-        return db.run(sql)
-    }
+  static async insert(customer) {
+    const res = await db.run(` INSERT INTO customers VALUES(?,?,?,?,?,?) `, [
+      this.lastID,
+      customer.name,
+      customer.address,
+      customer.phone,
+      customer.date_created,
+      customer.date_modified,
+    ]);
+  }
 
-    static async insert(name,shop_name,shop_address,phone){
-    
-       const res = await db.run(` INSERT INTO customers VALUES(?,?,?,?,?) `,
-                [this.lastID,name,shop_name,shop_address,phone],(err)=>{
-                    if (error) {
-                        console.log(error)
-                        return
-                    } else {
-                       console.log("Last ID: " + this.lastID)
-                       return
-                    }
-            })
-    }
+  static async update(customer) {
+    const response = await db.run(
+      `UPDATE customers SET name=?, address=?, phone=? WHERE id=?`,
+      [
+        customer.name,
+        customer.address,
+        customer.phone,
+        customer.date_created,
+        customer.date_modified,
+        customer.id,
+      ]
+    );
+    return res;
+  }
 
-    static getAll(){
-      return db.all(`SELECT * FROM customers`)
-    }
+  static async getOne(customer) {
+    const response = await db.run("SELECT * FROM customer WHERE id=?", [
+      customer.id,
+    ]);
+    return response;
+  }
 
-    static delete(id){
-        db.run(`DELETE FROM customers WHERE id = ${id}`)
-        return console.log("item deleted")
-    }
+  static getAll() {
+    return db.all(`SELECT * FROM customers ORDER BY id DESC`);
+  }
+
+  static delete(customer) {
+    db.run(`DELETE FROM customers WHERE id = ${customer}`);
+    return console.log("item deleted");
+  }
 }
 
-export default Customer
+export default Customer;
