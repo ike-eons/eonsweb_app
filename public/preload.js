@@ -55,8 +55,6 @@ contextBridge.exposeInMainWorld("API", {
     return data;
   },
   categoryCreate: async (category) => {
-    console.log("***** create categories *********");
-    console.log(category);
     let data = await ipcRenderer.invoke("category:create", category);
     return data;
   },

@@ -233,11 +233,11 @@ export default {
           // Check if the value matches the pattern.
           return pattern.test(value);
         },
-        uniquePhone(value) {
-          if (value === "") return true;
-          const customers = this.$store.state.customers.customers;
-          return !customers.some((customer) => customer.phone === value);
-        },
+        // uniquePhone(value) {
+        //   if (value === "") return true;
+        //   const customers = this.$store.state.customers.customers;
+        //   return !customers.some((customer) => customer.phone === value);
+        // },
       },
     },
   },
@@ -270,8 +270,8 @@ export default {
         errors.push("Phone number is required");
       !this.$v.customerItem.phone.validPhoneNumber &&
         errors.push("Phone number must be 10 digits exactly **");
-      !this.$v.customerItem.phone.uniquePhone &&
-        errors.push("Phone number must be 10 unique *");
+      // !this.$v.customerItem.phone.uniquePhone &&
+      //   errors.push("Phone number must be 10 unique *");
 
       return errors;
     },
@@ -358,6 +358,11 @@ export default {
         );
         this.loadCustomers();
       }
+      // Reset form validation
+      this.$v.$reset();
+
+      // Close the dialog
+      // this.dialog = false;
 
       this.close();
     },

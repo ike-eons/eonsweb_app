@@ -1,5 +1,13 @@
 import { db } from "./db_connection";
 
+const defaultCustomer = {
+  name: "Cash Customer",
+  address: "N/A",
+  phone: "0000000000",
+  date_created: "N/A",
+  date_modified: "N/A",
+};
+
 class Customer {
   constructor(name, address, phone, date_created, date_modified) {
     (this.name = name),
@@ -9,7 +17,7 @@ class Customer {
       (this.date_modified = date_modified);
   }
 
-  static createTable() {
+  static async createTable() {
     let sql = `CREATE TABLE IF NOT EXISTS  customers(
             id  INTEGER PRIMARY KEY,
             name    TEXT,
@@ -18,8 +26,15 @@ class Customer {
             date_created TEXT,
             date_modified TEXT
         )`;
-    console.log("customers table created");
-    return db.run(sql);
+    await db.run(sql);
+
+    let customers = await this.getAll();
+
+    if (customers.length === 0) {
+      await this.insert(defaultCustomer);
+      console.log("Default customer inserted.");
+    }
+    console.log(`customers table created`);
   }
 
   static async insert(customer) {
@@ -31,10 +46,12 @@ class Customer {
       customer.date_created,
       customer.date_modified,
     ]);
+
+    return res;
   }
 
   static async update(customer) {
-    const response = await db.run(
+    const res = await db.run(
       `UPDATE customers SET name=?, address=?, phone=? WHERE id=?`,
       [
         customer.name,

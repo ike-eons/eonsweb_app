@@ -32,13 +32,16 @@ class DatabaseConnection {
   run(sql, params) {
     return new Promise((resolve, reject) => {
       this.sqlitedb.run(sql, params, function (err) {
-        if (err) {
-          console.log("Error running sql" + sql);
+        if (err && err.message.includes("UNIQUE constraint failed")) {
+          const matches = err.message.match(
+            /UNIQUE constraint failed: categories.(\w+)/
+          );
+          const columnName = matches[1];
           return reject({
             error: err.name,
             message: err.message,
-            stack: err.stack,
-            user_message: "somthing went wrong",
+            // stack: err.stack,
+            user_message: `${columnName} must be unique`,
           });
         }
         console.log(this.lastID);
@@ -49,13 +52,13 @@ class DatabaseConnection {
   update(sql, params) {
     return new Promise((resolve, reject) => {
       this.sqlitedb.run(sql, params, function (err) {
-        if (err) {
+        if (err && err.message.includes("UNIQUE constraint failed")) {
           console.log("Error running sql" + sql);
           return reject({
             error: err.name,
             message: err.message,
-            stack: err.stack,
-            user_message: "somthing went wrong",
+            // stack: err.stack,
+            // user_message: "somthing went wrong",
           });
         }
         return resolve(this.changes);

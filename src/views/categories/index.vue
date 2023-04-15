@@ -7,6 +7,9 @@
     sort-by="calories"
     class="elevation-1 mytable"
   >
+    <template v-slot:[`item.numbering`]="{ index }">
+      {{ index + 1 }}
+    </template>
     <template v-slot:top>
       <v-toolbar flat color="teal" dark>
         <v-toolbar-title>CATEGORIES</v-toolbar-title>
@@ -24,18 +27,20 @@
         ></v-text-field>
         <v-spacer></v-spacer>
         <v-divider class="mx-4" inset vertical></v-divider>
-        <v-dialog v-model="dialog" max-width="500px">
+        <v-dialog v-model="dialog" max-width="600px">
           <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="white"
-              class="mb-2 teal--text"
-              v-bind="attrs"
-              v-on="on"
-            >
-              <span class="font-weight-bold">+</span> New Category
-            </v-btn>
+            <div class="btn-border">
+              <v-btn
+                color="white"
+                class="mb-2 teal--text"
+                v-bind="attrs"
+                v-on="on"
+              >
+                <span class="font-weight-bold">+</span> New Category
+              </v-btn>
+            </div>
           </template>
-          <v-card>
+          <v-card width="600">
             <v-card-title>
               <span class="headline">{{ formTitle }}</span>
             </v-card-title>
@@ -55,7 +60,7 @@
                     >
                     </v-text-field>
                   </v-col>
-                  <v-col cols="12">
+                  <v-col cols="12" class="mt-n5">
                     <v-textarea
                       v-model="editedItem.description"
                       dense
@@ -68,6 +73,16 @@
                     >
                     </v-textarea>
                   </v-col>
+                  <v-col>
+                    <v-alert
+                      dense
+                      text
+                      type="error"
+                      v-show="errorMessage != ''"
+                    >
+                      {{ errorMessage }}
+                    </v-alert>
+                  </v-col>
                 </v-row>
               </v-container>
             </v-card-text>
@@ -75,7 +90,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="red darken-1 white--text" @click="close">
-                Cancel
+                Close
               </v-btn>
               <v-btn
                 color="teal darken-1 white--text"
@@ -123,6 +138,7 @@
         mdi-delete
       </v-icon>
     </template>
+
     <template v-slot:no-data>
       <v-btn color="teal" @click="loadCategories"> Reset </v-btn>
     </template>
@@ -139,15 +155,26 @@ export default {
     dialogDelete: false,
     search: "",
     headers: [
+      // { text: "#", value: "numbering", width: "50px" },
+      { text: "#", value: "numbering" },
       {
         text: "Category Name",
         align: "start",
         sortable: true,
         value: "name",
       },
-      { text: "Description", value: "description" },
-      { text: "Created At", value: "date_created" },
-      { text: "Modified At", value: "date_modified" },
+      {
+        text: "Description",
+        value: "description",
+      },
+      {
+        text: "Created At",
+        value: "date_created",
+      },
+      {
+        text: "Modified At",
+        value: "date_modified",
+      },
       { text: "Actions", value: "actions", sortable: false },
     ],
 
@@ -167,6 +194,9 @@ export default {
   }),
 
   computed: {
+    errorMessage() {
+      return this.$store.state.categories.error;
+    },
     categories() {
       return this.$store.state.categories.categories;
     },
@@ -180,8 +210,8 @@ export default {
         errors.push("Category name is required*");
       !this.$v.editedItem.name.minLength &&
         errors.push("Category name must be atleast 3 characters*");
-      !this.$v.editedItem.name.uniqueName &&
-        errors.push("Category name already Exist*");
+      // !this.$v.editedItem.name.uniqueName &&
+      //   errors.push("Category name already Exist*");
       return errors;
     },
     descriptionErrors() {
@@ -210,18 +240,18 @@ export default {
       name: {
         required,
         minLength: minLength(3),
-        async uniqueName(value) {
-          if (value == "") return true;
+        // async uniqueName(value) {
+        //   if (value == "") return true;
 
-          const categories = await this.categories;
-          const name_alreadyExist = categories.find(
-            (category) => category.name.toLowerCase() === value.toLowerCase()
-          );
-          if (name_alreadyExist) {
-            return false;
-          }
-          return true;
-        },
+        //   const categories = await this.categories;
+        //   const name_alreadyExist = categories.find(
+        //     (category) => category.name.toLowerCase() === value.toLowerCase()
+        //   );
+        //   if (name_alreadyExist) {
+        //     return false;
+        //   }
+        //   return true;
+        // },
       },
       description: {
         required,
@@ -251,13 +281,16 @@ export default {
       this.dialogDelete = true;
     },
 
-    deleteItemConfirm() {
-      this.categories.splice(this.editedIndex, 1);
+    async deleteItemConfirm() {
+      this.$store.state.categories.categories.splice(this.editedIndex, 1);
+      await this.$store.dispatch("categories/deleteCategory", this.editedItem);
       this.closeDelete();
     },
 
     close() {
+      this.$v.$reset();
       this.dialog = false;
+      this.$store.state.categories.error = "";
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
@@ -292,43 +325,46 @@ export default {
     //   this.close();
     // },
 
-    async save() {
+    async savedata() {
       console.log(this.editedItem);
       await this.$store.dispatch("categories/createCategory", this.editedItem);
 
-      this.loadCategories();
+      // Reset form validation
+      this.$v.$reset();
 
-      this.close();
+      this.loadCategories();
+    },
+
+    async save() {
+      if (this.editedIndex > -1) {
+        // Object.assign(this.desserts[this.editedIndex], this.editedItem);
+        console.log(this.editedItem);
+        await this.$store.dispatch(
+          "categories/updateCategory",
+          this.editedItem
+        );
+        this.loadCategories();
+        this.close();
+      } else {
+        await this.$store.dispatch(
+          "categories/createCategory",
+          this.editedItem
+        );
+        this.$v.$reset();
+        this.loadCategories();
+      }
     },
   },
 };
 </script>
 
 <style>
-.flex-table {
-  height: 50px;
-}
-.flex-table.row:nth-of-type(2n) {
-  background: rgb(238, 238, 238);
-}
-
-.flex-table.v-text-field input {
-  padding: 2px 0 2px 0px;
-}
-
-/* .mytable table tr {
-    background-color: lightgoldenrodyellow;
-    border-bottom: none;
-  } */
+/* th,
+td {
+  border-right: 1px solid #ccc;
+} */
 
 .mytable tbody tr:nth-of-type(odd) {
   background-color: rgba(0, 0, 0, 0.05);
 }
-/* tbody tr:nth-of-type(odd) {
-   background-color: rgba(0, 0, 0, .05);
-  }
-  table thead{
-    font-weight: bolder;
-    background-color: black;
-  } */
 </style>

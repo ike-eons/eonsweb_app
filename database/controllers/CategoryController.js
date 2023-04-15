@@ -5,15 +5,16 @@ Category.createTable();
 async function saveData(_, data) {
   try {
     const category = await Category.insert(data);
+
     return category;
   } catch (e) {
-    console.log(e.message);
+    return { error: e.user_message };
   }
 }
 async function updateData(_, data) {
   try {
-    let category = await Category.update(data);
-    return category;
+    let cat = await Category.update(data);
+    return cat;
   } catch (e) {
     console.log(e.message);
   }

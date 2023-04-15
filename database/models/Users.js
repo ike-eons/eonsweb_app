@@ -29,11 +29,11 @@ class User {
             firstname TEXT,
             lastname TEXT,
             username TEXT NOT NULL UNIQUE,
-			role TEXT,
+			      role TEXT,
             phone TEXT,
             password TEXT,
-			date_created TEXT,
-			date_modified TEXT
+            date_created TEXT,
+            date_modified TEXT
             )`;
     console.log("users table created");
     return db.run(sql);
