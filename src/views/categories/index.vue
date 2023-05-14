@@ -4,7 +4,7 @@
     :headers="headers"
     :search="search"
     :items="categories"
-    sort-by="calories"
+    sort-by="date_created"
     class="elevation-1 mytable"
   >
     <template v-slot:[`item.numbering`]="{ index }">
@@ -49,7 +49,8 @@
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field
+                    <v-textarea
+                      rows="3"
                       v-model="editedItem.name"
                       outlined
                       dense
@@ -58,29 +59,25 @@
                       @blur="$v.editedItem.name.$touch()"
                       :error-messages="nameErrors"
                     >
-                    </v-text-field>
-                  </v-col>
-                  <v-col cols="12" class="mt-n5">
-                    <v-textarea
-                      v-model="editedItem.description"
-                      dense
-                      rows="2"
-                      outlined
-                      label="Description"
-                      @input="$v.editedItem.description.$touch()"
-                      @blur="$v.editedItem.description.$touch()"
-                      :error-messages="descriptionErrors"
-                    >
                     </v-textarea>
                   </v-col>
+
                   <v-col>
                     <v-alert
+                      class="mt-n5"
                       dense
                       text
                       type="error"
                       v-show="errorMessage != ''"
                     >
-                      {{ errorMessage }}
+                      <span class="text-body-2" style="color: red">
+                        `{{ editedItem.name }}` already exist.
+                      </span>
+                      <span class="text-body-2">
+                        Product
+                        <span style="color: red">`{{ errorMessage }}`</span>
+                        must be Unique*
+                      </span>
                     </v-alert>
                   </v-col>
                 </v-row>
@@ -163,17 +160,10 @@ export default {
         sortable: true,
         value: "name",
       },
-      {
-        text: "Description",
-        value: "description",
-      },
+
       {
         text: "Created At",
         value: "date_created",
-      },
-      {
-        text: "Modified At",
-        value: "date_modified",
       },
       { text: "Actions", value: "actions", sortable: false },
     ],
@@ -181,15 +171,13 @@ export default {
     editedIndex: -1,
     editedItem: {
       name: "",
-      description: "",
+
       date_created: moment().format("YYYY-MM-DD h:mm:ss a"),
-      date_modified: moment().format("YYYY-MM-DD h:mm:ss a"),
     },
     defaultItem: {
       name: "",
-      description: "",
+
       date_created: moment().format("YYYY-MM-DD h:mm:ss a"),
-      date_modified: moment().format("YYYY-MM-DD h:mm:ss a"),
     },
   }),
 
@@ -214,15 +202,6 @@ export default {
       //   errors.push("Category name already Exist*");
       return errors;
     },
-    descriptionErrors() {
-      const errors = [];
-      if (!this.$v.editedItem.description.$dirty) return errors;
-      !this.$v.editedItem.description.required &&
-        errors.push("Category description is required");
-      !this.$v.editedItem.description.minLength &&
-        errors.push("Category description must be atleast 3 characters*");
-      return errors;
-    },
   },
 
   watch: {
@@ -240,28 +219,12 @@ export default {
       name: {
         required,
         minLength: minLength(3),
-        // async uniqueName(value) {
-        //   if (value == "") return true;
-
-        //   const categories = await this.categories;
-        //   const name_alreadyExist = categories.find(
-        //     (category) => category.name.toLowerCase() === value.toLowerCase()
-        //   );
-        //   if (name_alreadyExist) {
-        //     return false;
-        //   }
-        //   return true;
-        // },
-      },
-      description: {
-        required,
-        minLength: minLength(3),
       },
     },
   },
 
   created() {
-    this.loadCategories();
+    // this.loadCategories();
   },
 
   methods: {
@@ -298,7 +261,9 @@ export default {
     },
 
     closeDelete() {
-      this.dialogDelete = false;
+      this.$v.$reset();
+      this.dialog = false;
+      this.$store.state.categories.error = "";
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
@@ -350,8 +315,8 @@ export default {
           "categories/createCategory",
           this.editedItem
         );
-        this.$v.$reset();
         this.loadCategories();
+        this.$v.$reset();
       }
     },
   },

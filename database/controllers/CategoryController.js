@@ -13,10 +13,13 @@ async function saveData(_, data) {
 }
 async function updateData(_, data) {
   try {
+    console.log(`in products controller`);
+    console.log(data);
+    console.log(`in products controller`);
     let cat = await Category.update(data);
     return cat;
   } catch (e) {
-    console.log(e.message);
+    return { error: e.user_message };
   }
 }
 
@@ -34,7 +37,6 @@ async function loadData(_, data) {
   try {
     const res = await Category.getAll();
     data = res;
-
     return data;
   } catch (error) {
     console.log(error.message);

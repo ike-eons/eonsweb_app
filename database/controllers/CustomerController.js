@@ -4,16 +4,16 @@ Customer.createTable();
 
 async function saveData(_, data) {
   try {
-    const customer = await Customer.insert(data);
-    return customer;
+    const res = await Customer.insert(data);
+    return dres;
   } catch (e) {
     console.log(e.message);
   }
 }
 async function updateData(_, data) {
   try {
-    let Customer = await Customer.update(data);
-    return customer;
+    let res = await Customer.update(data);
+    return res;
   } catch (e) {
     console.log(e.message);
   }
@@ -21,8 +21,8 @@ async function updateData(_, data) {
 
 async function getOne(_, data) {
   try {
-    const customer = await Customer.getOne(data);
-    return customer;
+    const res = await Customer.getOne(data);
+    return res;
   } catch (error) {
     console.log(error.message);
     return error.message;

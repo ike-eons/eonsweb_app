@@ -66,4 +66,42 @@ contextBridge.exposeInMainWorld("API", {
     let data = await ipcRenderer.invoke("category:delete", category);
     return data;
   },
+
+  //PRODUCT API
+  productsFetch: async (products) => {
+    let data = await ipcRenderer.invoke("products:load", products);
+    return data;
+  },
+  productCreate: async (product) => {
+    let data = await ipcRenderer.invoke("product:create", product);
+    return data;
+  },
+  productUpdate: async (product) => {
+    let data = await ipcRenderer.invoke("product:update", product);
+    return data;
+  },
+  productDelete: async (product) => {
+    let data = await ipcRenderer.invoke("product:delete", product);
+    return data;
+  },
+
+  //INVOICE API
+  invoicesFetch: async (invoices) => {
+    let data = await ipcRenderer.invoke("invoices:load", invoices);
+    return data;
+  },
+
+  invoiceCreate: async (invoice) => {
+    let data = await ipcRenderer.invoke("invoice:create", invoice);
+    return data;
+  },
+
+  invoiceUpdate: async (invoice) => {
+    let data = await ipcRenderer.invoke("invoice:update", invoice);
+    return data;
+  },
+
+  invoiceDelete: async (invoice) => {
+    let data = await ipcRenderer.invoke("invoice:delete", invoice);
+  },
 });

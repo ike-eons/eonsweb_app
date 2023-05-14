@@ -1,37 +1,97 @@
 import { db } from "./db_connection";
+import InvoiceItems from "./InvoiceItems";
+import Payment from "./Payments";
 
 class Invoice {
-  constructor(employee_id, total, customer_id, date_created, date_modified) {
-    (this.total = total),
-      (this.employee_id = employee_id),
+  constructor(employee_id, customer_id, total, date_created) {
+    (this.employee_id = employee_id),
       (this.customer_id = customer_id),
-      (this.date_created = date_created),
-      (this.date_modified = date_modified);
+      (this.total = total),
+      (this.date_created = date_created);
   }
 
-  static async createTable() {
-    let sql = await `CREATE TABLE IF NOT EXISTS  invoices(
+  static createTable() {
+    let sql = `CREATE TABLE IF NOT EXISTS  invoices(
             id  INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_id INTEGER,
             employee_id INTEGER,
-            total    FLOAT,
-            date_created TEXT,
-            date_modified TEXT,
-            
+            customer_id INTEGER,
+            total FLOAT,
+            date_created TEXT 
         )`;
-
+    console.log(`invoice table created`);
     return db.run(sql);
   }
 
+  // static async insert1(invoice) {
+  //   invoice.employee_id = 1;
+
+  //   const res = await db.run(` INSERT INTO invoices VALUES(?,?,?,?,?) `, [
+  //     this.lastID,
+  //     invoice.customer_id,
+  //     invoice.employee_id,
+  //     invoice.total,
+  //     invoice.date_created,
+  //   ]);
+
+  //   console.log(`invoice id ${res}`);
+
+  //   invoice.invoice_items.forEach((item) => {
+  //     item.invoice_id = res;
+
+  //     const result = InvoiceItems.insert(item)
+  //       .then((result) => {
+  //         console.log(result);
+  //       })
+  //       .catch((error) => {
+  //         console.log(error);
+  //       });
+  //   });
+
+  //   // console.log(insertInvoiceItem);
+  // }
+
   static async insert(invoice) {
-    const res = await db.run(` INSERT INTO invoices VALUES(?,?,?,?,?) `, [
-      this.lastID,
-      invoice.total,
-      invoice.employee_id,
-      invoice.date_created,
-      invoice.date_modified,
-    ]);
-    return res;
+    return db.sqlitedb.run("BEGIN TRANSACTION", async () => {
+      try {
+        // Insert a new row into the invoices table and get its id
+        const invoiceResult = await db.run(
+          `INSERT INTO invoices VALUES(?,?,?,?,?)`,
+          [
+            this.lastID,
+            invoice.customer_id,
+            invoice.employee_id,
+            invoice.total,
+            invoice.date_created,
+          ]
+        );
+
+        invoice.id = invoiceResult;
+
+        console.log(`invoice id ${invoiceResult}`);
+
+        // Insert a new row into the invoice_items table for each item, using the invoiceId value
+        invoice.invoice_items.forEach((item) => {
+          item.invoice_id = invoiceResult;
+
+          const result = InvoiceItems.insert(item)
+            .then((result) => {
+              console.log(result);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        });
+
+        Payment.insert(invoice);
+
+        // Commit the transaction
+        await db.sqlitedb.run("COMMIT");
+        return invoice.id;
+      } catch (err) {
+        await db.sqlitedb.run("ROLLBACK");
+        console.log(err);
+      }
+    });
   }
 
   static getAll() {

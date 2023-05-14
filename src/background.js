@@ -17,6 +17,7 @@ import // defaultUser,
 
 import * as CustomerController from "../database/controllers/CustomerController";
 import * as ProductController from "../database/controllers/ProductController";
+import * as InvoiceController from "../database/controllers/InvoiceController";
 import * as CategoryController from "../database/controllers/CategoryController";
 
 // Get the path to the extraResources directory
@@ -199,6 +200,13 @@ ipcMain.handle("category:update", CategoryController.updateData);
 ipcMain.handle("category:delete", CategoryController.deleteData);
 ipcMain.handle("category:get_one", CategoryController.getOne);
 ipcMain.handle("categories:load", CategoryController.loadData);
+
+//invoice handlers
+ipcMain.handle("invoice:create", InvoiceController.saveData);
+ipcMain.handle("invoice:update", InvoiceController.updateData);
+ipcMain.handle("invoice:delete", InvoiceController.deleteData);
+ipcMain.handle("invoice.get-one", InvoiceController.getOne);
+ipcMain.handle("invoices:load", InvoiceController.loadData);
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

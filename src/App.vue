@@ -25,6 +25,18 @@ export default {
 </script>
 
 <style>
+:root {
+  --light-teal-1: #eaffff;
+  --light-teal-2: hsla(180, 100%, 25%, 0.192);
+  --light-teal-3: #66b2b2;
+  --light-teal-4: #008080;
+  --dark-teal: teal;
+
+  --green-dark: rgb(9, 154, 151) 6.3%;
+  --green-light: rgb(21, 205, 168) 90.6%;
+  --white-color: #fff;
+  --red-color: red;
+}
 ::-webkit-scrollbar {
   width: 0px;
 }

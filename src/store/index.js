@@ -7,6 +7,7 @@ import products from "./modules/products";
 // import { ipcRenderer } from 'electron';
 import customers from "./modules/customers";
 import categories from "./modules/categories";
+import invoices from "./modules/invoices";
 
 Vue.use(Vuex);
 
@@ -15,6 +16,7 @@ export default new Vuex.Store({
     products,
     customers,
     categories,
+    invoices,
   },
   state: {
     users: [],

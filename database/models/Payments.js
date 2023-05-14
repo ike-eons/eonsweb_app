@@ -10,7 +10,6 @@ class Payment {
 
   static createTable() {
     let sql = `CREATE TABLE IF NOT EXISTS  payments(
-            id  INTEGER PRIMARY KEY,
             invoice_id INTEGER,
             customer_id INTEGER,
             amount_paid DOUBLE,
@@ -20,13 +19,12 @@ class Payment {
             FOREIGN KEY(customer_id)
                 REFERENCES  customers(id)
         )`;
-
+    console.log(`Payments table created`);
     return db.run(sql);
   }
 
   static async insert(invoice) {
-    db.run(`INSERT INTO inventories VALUES(?,?,?,?,?)`, [
-      this.lastID,
+    db.run(`INSERT INTO payments VALUES(?,?,?,?)`, [
       invoice.invoice_id,
       invoice.customer_id,
       invoice.amount_paid,

@@ -1,27 +1,39 @@
 import { db } from "./db_connection";
 
+const now = new Date();
+
+const formattedDate = now
+  .toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  })
+  .replace(",", "")
+  .replace(
+    /(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s(\d{1,2}):(\d{2}):(\d{2})\s?(AM|PM)/i,
+    "$3-$1-$2 $4:$5:$6 $7"
+  );
+
 const defaultCategory = {
   name: "General Products",
-  description: "Generic products",
-  date_created: "N/A",
-  date_modified: "N/A",
+  date_created: formattedDate,
 };
 
 class Category {
-  constructor(name, description, date_created, date_modified) {
-    (this.name = name),
-      (this.description = description),
-      (this.date_created = date_created),
-      (this.date_modified = date_modified);
+  constructor(name, date_created) {
+    (this.name = name), (this.date_created = date_created);
   }
 
   static async createTable() {
     let sql = `CREATE TABLE IF NOT EXISTS  categories(
             id  INTEGER PRIMARY KEY,
             name    TEXT UNIQUE,
-            description TEXT UNIQUE,
-            date_created TEXT,
-            date_modified TEXT
+            date_created TEXT
+         
         )`;
     await db.run(sql);
 
@@ -43,12 +55,12 @@ class Category {
   }
 
   static async insert(category) {
-    const res = await db.run(` INSERT INTO categories VALUES(?,?,?,?,?) `, [
+    const name = category.name.toLowerCase();
+
+    const res = await db.run(` INSERT INTO categories VALUES(?,?,?) `, [
       this.lastID,
-      category.name,
-      category.description,
+      name,
       category.date_created,
-      category.date_modified,
     ]);
 
     const insertedCategory = await db.get(
@@ -65,14 +77,8 @@ class Category {
 
   static async update(category) {
     const res = await db.update(
-      "UPDATE categories SET name=?,description=?,date_created=?,date_modified=? WHERE id=?",
-      [
-        category.name,
-        category.description,
-        category.date_created,
-        category.date_modified,
-        category.id,
-      ]
+      "UPDATE categories SET name=?,date_created=? WHERE id=?",
+      [category.name, category.date_created, category.id]
     );
 
     return res;

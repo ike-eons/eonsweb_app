@@ -1,0 +1,137 @@
+Code snippet
+const sqlite3 = require('sqlite3');
+
+// Create a connection to the database
+const db = new sqlite3('mydatabase.sqlite');
+
+// Begin a transaction
+db.beginTransaction((err) => {
+  if (err) {
+    // Handle the error
+  } else {
+    // Insert a row into the table
+    db.exec('INSERT INTO users (name, age) VALUES (?, ?)', ['John Doe', 25], (err, rows) => {
+      if (err) {
+        // Handle the error
+      } else {
+        // Commit the transaction
+        db.commit((err) => {
+          if (err) {
+            // Handle the error
+          } else {
+            // The transaction was successful
+          }
+        });
+      }
+    });
+  }
+});
+
+
+The best way to write a transaction using node-sqlite3 from the tables invoices, invoice_items, and payment_type is to use the following steps:
+
+Create a connection to the database.
+Begin a transaction.
+Insert a row into the invoices table.
+Insert rows into the invoice_items table.
+Update the payment_type table.
+Commit the transaction.
+The following code shows how to do this:
+
+const sqlite3 = require('sqlite3');
+
+// Create a connection to the database
+const db = new sqlite3('mydatabase.sqlite');
+
+// Begin a transaction
+db.beginTransaction((err) => {
+if (err) {
+// Handle the error
+} else {
+// Insert a row into the invoices table
+db.exec('INSERT INTO invoices (invoice_number, invoice_date, customer_id, total_amount) VALUES (?, ?, ?, ?)', ['123456', '2023-05-13', 1, 100.00], (err, rows) => {
+if (err) {
+// Handle the error
+} else {
+// Insert rows into the invoice_items table
+for (let i = 0; i < 5; i++) {
+db.exec('INSERT INTO invoice_items (invoice_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)', [rows[0], 1, 1, 20.00], (err, rows) => {
+if (err) {
+// Handle the error
+}
+});
+}
+
+Code snippet
+    // Update the payment_type table
+    db.exec('UPDATE payment_type SET default_payment_type = ? WHERE payment_type_id = ?', ['credit card', 1], (err, rows) => {
+      if (err) {
+        // Handle the error
+      } else {
+        // Commit the transaction
+        db.commit((err) => {
+          if (err) {
+            // Handle the error
+          } else {
+            // The transaction was successful
+          }
+        });
+      }
+    });
+  }
+});
+Use code with caution. Learn more
+}
+});
+
+If the transaction fails, the err parameter will be set to a non-null value. You can then handle the error accordingly.
+
+If the transaction succeeds, the rows parameter will be an array of rows that were affected by the INSERT or UPDATE statements.
+
+It is important to note that you should not perform any other writes to the database while a transaction is in progress. This could result in data corruption.
+
+
+
+what if i want to use promise
+View other drafts
+
+
+
+
+Sure, you can use promises with node-sqlite3. The following code shows how to do this:
+
+const sqlite3 = require('sqlite3');
+
+// Create a connection to the database
+const db = new sqlite3('mydatabase.sqlite');
+
+// Begin a transaction
+const transaction = db.beginTransaction();
+
+// Insert a row into the invoices table
+const invoiceInsertPromise = transaction.exec('INSERT INTO invoices (invoice_number, invoice_date, customer_id, total_amount) VALUES (?, ?, ?, ?)', ['123456', '2023-05-13', 1, 100.00]);
+
+// Insert rows into the invoice_items table
+const invoiceItemsInsertPromises = [];
+for (let i = 0; i < 5; i++) {
+invoiceItemsInsertPromises.push(transaction.exec('INSERT INTO invoice_items (invoice_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)', [rows[0], 1, 1, 20.00]));
+}
+
+// Update the payment_type table
+const paymentTypeUpdatePromise = transaction.exec('UPDATE payment_type SET default_payment_type = ? WHERE payment_type_id = ?', ['credit card', 1]);
+
+// All of the promises will be resolved or rejected together
+Promise.all([invoiceInsertPromise, ...invoiceItemsInsertPromises, paymentTypeUpdatePromise]).then(() => {
+// The transaction was successful
+transaction.commit();
+}, (err) => {
+// The transaction failed
+transaction.rollback();
+throw err;
+});
+
+This code uses the Promise constructor to create a promise that will be resolved or rejected when the transaction is complete. The then() method is used to attach a callback function that will be called when the promise is resolved. The catch() method is used to attach a callback function that will be called when the promise is rejected.
+
+The all() method is used to wait for all of the promises in the array to resolve or reject before calling the callback function. The callback function will be passed an array of the results of the individual promises.
+
+In this case, the all() method will wait for the invoiceInsertPromise, invoiceItemsInsertPromises, and paymentTypeUpdatePromise promises to resolve or reject before calling the callback function. If any of the promises are rejected, the callback function will be called with the error object.

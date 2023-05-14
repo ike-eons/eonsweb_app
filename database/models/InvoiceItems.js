@@ -10,7 +10,7 @@ class InvoiceItem {
 
   static createTable() {
     let sql = `CREATE TABLE IF NOT EXISTS  invoice_items(
-            id  INTEGER PRIMARY KEY AUTOINCREMENT,
+           
             invoice_id INTEGER,
             product_id INTEGER,
             unit_cost   FLOAT,
@@ -24,14 +24,16 @@ class InvoiceItem {
     return db.run(sql);
   }
 
-  static insert(invoice) {
-    return db.run(` INSERT INTO invoice_items VALUES(?,?,?,?,?) `, [
-      this.lastID,
-      invoice.invoice_id,
-      invoice.product_id,
-      invoice.unit_cost,
-      invoice.quantity,
-    ]);
+  static insert(invoice_item) {
+    return db.save(
+      ` INSERT INTO invoice_items(invoice_id,product_id,unit_cost,quantity) VALUES(?,?,?,?) `,
+      [
+        invoice_item.invoice_id,
+        invoice_item.product_id,
+        invoice_item.unit_cost,
+        invoice_item.quantity,
+      ]
+    );
   }
   static getAll() {
     return db.all(`SELECT * FROM invoice_items`);

@@ -290,7 +290,7 @@ export default {
   },
 
   created() {
-    this.loadCustomers();
+    // this.loadCustomers();
   },
 
   methods: {

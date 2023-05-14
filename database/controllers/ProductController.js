@@ -6,19 +6,18 @@ async function saveData(_, data) {
   try {
     const product = await Product.insert(data);
     return product;
-  } catch (error) {
-    console.log(error.message);
-    return error.message;
+  } catch (e) {
+    return { error: e.user_message };
   }
 }
 
 async function updateData(_, data) {
   try {
-    const product = await Product.update(data);
-    return product;
-  } catch (error) {
-    console.log(error.message);
-    return error.message;
+    const updateProduct = await Product.update(data);
+
+    return updateProduct;
+  } catch (e) {
+    return { error: e.user_message };
   }
 }
 
@@ -26,20 +25,18 @@ async function getOne(_, data) {
   try {
     const product = await Product.getOne(data);
     return product;
-  } catch (error) {
-    console.log(error.message);
-    return error.message;
+  } catch (e) {
+    return e.message;
   }
 }
 
 async function loadData(_, data) {
   try {
-    const allproducts = await Product.getAll();
-    data = allproducts;
+    const res = await Product.getAll();
+    data = res;
     return data;
-  } catch (error) {
-    console.log(error.message);
-    return error.message;
+  } catch (e) {
+    return e.message;
   }
 }
 
@@ -47,9 +44,9 @@ async function deleteData(_, data) {
   try {
     const res = await Product.delete(data);
     return res;
-  } catch (error) {
-    console.log(error.message);
-    return error.message;
+  } catch (e) {
+    console.log(e.message);
+    return e.message;
   }
 }
 
